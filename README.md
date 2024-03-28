@@ -14,6 +14,7 @@
 
 
 
+---
 
-
-**Nota** - O diretório (../Utilities/test-commands) é apenas um teste dos utilitários. Por favor, desconsidere!
+## Nota
+O diretório `../Utilities/test-commands` é apenas para testar utilitários. Por favor, ignore.
