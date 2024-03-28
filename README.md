@@ -10,3 +10,6 @@
 **Students:**
 - Carolyne Silva - 20210046
 - Gustavo Farinha - 20211115
+
+
+*Nota* - O diretório (../Utilities/test-commands) é apenas um teste dos utilitários. Por favor, desconsidere!
