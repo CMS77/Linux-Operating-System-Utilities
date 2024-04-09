@@ -1,4 +1,4 @@
-#include <stdio.h>
+ #include <stdio.h>
 #include <stdlib.h>
 #include <dirent.h>
 #include <sys/stat.h>
@@ -7,7 +7,6 @@
 #include <time.h>
 #include <string.h>  // Include for strcmp
 #include <limits.h>
-#include <linux/limits.h>
 
 void print_file_info(const char *filename, const struct stat *statbuf) {
     // Print file type
