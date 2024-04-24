@@ -28,14 +28,19 @@ void grep(const char *pattern, const char *filename, int include_line_numbers) {
     fclose(file);
 }
 
+// Function to search for a pattern within a line and include line numbers
+void grep_n(const char *pattern, const char *filename) {
+    grep(pattern, filename, 1);
+}
+
 int main(int argc, char *argv[]) {
     if (argc < 3) {
         fprintf(stderr, "Usage: %s [-n] pattern file1 [file2 ...]\n", argv[0]);
         return EXIT_FAILURE;
     }
 
-    int include_line_numbers = 0;
     int arg_index = 1;
+    int include_line_numbers = 0;
 
     // Check if the first argument is the -n flag
     if (strcmp(argv[1], "-n") == 0) {
@@ -45,8 +50,15 @@ int main(int argc, char *argv[]) {
 
     const char *pattern = argv[arg_index];
 
-    for (int i = arg_index + 1; i < argc; i++) {
-        grep(pattern, argv[i], include_line_numbers);
+    // Call grep_n if -n option is provided, else call grep
+    if (include_line_numbers) {
+        for (int i = arg_index + 1; i < argc; i++) {
+            grep_n(pattern, argv[i]);
+        }
+    } else {
+        for (int i = arg_index + 1; i < argc; i++) {
+            grep(pattern, argv[i], 0);
+        }
     }
 
     return EXIT_SUCCESS;
