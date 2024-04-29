@@ -13,6 +13,16 @@ typedef struct {
     off_t size;
 } FileInfo;
 
+void print_options() {
+    printf("\nOptions:\n");
+    printf("  -a          : Show hidden files\n");
+    printf("  -h          : Show file sizes in human-readable format\n");
+    printf("  -l          : Show detailed file information(Type, Owner, Group, Size, Modification time, Name)\n");
+    printf("  --s         : Sort files by size\n");
+    printf("  --help      : Display this help message\n");
+}
+
+
 int compare_file_sizes(const void *a, const void *b) {
     const FileInfo *fileA = (const FileInfo *)a;
     const FileInfo *fileB = (const FileInfo *)b;
@@ -37,7 +47,6 @@ void human_read_size(off_t size, char *buffer, size_t buffer_size) {
 
     snprintf(buffer, buffer_size, "%ld %s", (long)size, units[unit_index]);
 }
-
 
 void print_file_info(const char *filename, const struct stat *statbuf) {
     printf((S_ISDIR(statbuf->st_mode)) ? "d" : "-");
@@ -66,66 +75,58 @@ void print_file_info(const char *filename, const struct stat *statbuf) {
     printf(" [%s]\n", filename);
 }
 
-void print_args() {
-    printf("Arguments for ls command:\n");
-    printf("  -a          : Show hidden files\n");
-    printf("  -h          : Show file sizes in human-readable format\n");
-    printf("  -l          : Show detailed file information(Type, Owner, Group, Size, Modification time, Name)\n");
-    printf("  --s         : Sort files by size\n");
-    printf("  --help      : Display this help message\n");
-}
 
 int main(int argc, char *argv[]) {
-    DIR *directory;
-    struct dirent *entry;
-    struct stat statbuf;
-
-    int hide = 0;     // -a 
-    int human_size = 0;  // -h 
-    int detail_file = 0;     // -l
-    int sort = 0;    // --s 
-
-    for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "-a") == 0) {
-            hide = 1;
-        } else if (strcmp(argv[i], "-h") == 0) {
-            human_size = 1;
-        } else if (strcmp(argv[i], "-l") == 0) {
-            detail_file = 1;
-        } else if (strcmp(argv[i], "--s") == 0) {
-            sort = 1;
-        } else if (strcmp(argv[i], "--help") == 0) {
-            print_args();
-             return EXIT_SUCCESS;
-        }
-    }
+    int hide = 0;         // -a 
+    int human_size = 0;   // -h 
+    int detail_file = 0;  // -l
+    int sort = 0;         // --s
+    const char *directory_path = ".";
+    int path_arg_encountered = 0;
 
      for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "--help") == 0) {
-            return EXIT_SUCCESS;
+        if (!path_arg_encountered && argv[i][0] == '-') {
+            if (strcmp(argv[i], "-a") == 0) {
+                hide = 1;
+            } else if (strcmp(argv[i], "-h") == 0) {
+                human_size = 1;
+            } else if (strcmp(argv[i], "-l") == 0) {
+                detail_file = 1;
+            } else if (strcmp(argv[i], "--s") == 0) {
+                sort = 1;
+            } else if (strcmp(argv[i], "--help") == 0) {
+                print_options();
+                return EXIT_SUCCESS;
+            } else {
+                printf("Invalid option: %s\n", argv[i]);
+                return EXIT_FAILURE;
+            }
+        } else {
+            if (!path_arg_encountered) {
+                directory_path = argv[i];
+                path_arg_encountered = 1;
+            } else {
+                printf("Invalid Command\n");
+                return EXIT_FAILURE;
+            }
         }
     }
 
-    if (argc < 2 || (argc == 2 && (hide || human_size || detail_file || sort ))) {
-        directory = opendir(".");
-    } else {
-        directory = opendir(argv[1]);
-    }
-
-
+    DIR *directory = opendir(directory_path);
     if (directory == NULL) {
         perror("Error opening directory");
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
 
     FileInfo *file_infos = malloc(sizeof(FileInfo) * 1000);
     if (file_infos == NULL) {
         perror("Memory allocation failed");
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
 
     int num_files = 0;
-
+    struct dirent *entry;
+    struct stat statbuf;
 
     while ((entry = readdir(directory)) != NULL) {
         if (!hide && entry->d_name[0] == '.') {
@@ -147,15 +148,17 @@ int main(int argc, char *argv[]) {
 
     if (detail_file) {
         for (int i = 0; i < num_files; i++) {
+            char filepath[PATH_MAX];
+            snprintf(filepath, PATH_MAX, "%s/%s", directory_path, file_infos[i].name);
             if (hide || file_infos[i].name[0] != '.') {
-                if (lstat(file_infos[i].name, &statbuf) == -1) {
+                if (lstat(filepath, &statbuf) == -1) {
                     perror("Error getting file status");
                     continue;
                 }
                 print_file_info(file_infos[i].name, &statbuf);
             }
         }
-    } else if (human_size){
+    } else if (human_size) {
         for (int i = 0; i < num_files; i++) {
             printf("%s", file_infos[i].name);
             if (human_size) {
@@ -165,15 +168,11 @@ int main(int argc, char *argv[]) {
             }
             printf("\n");
         }
-
-    } else if (sort){
-    
+    } else if (sort) {
         for (int i = 0; i < num_files; i++) {
             printf("%-20s %lld bytes\n", file_infos[i].name, (long long)file_infos[i].size);
             free(file_infos[i].name);
         }
-    
-
     } else {
         for (int i = 0; i < num_files; i++) {
             printf("%s\n", file_infos[i].name);
@@ -181,8 +180,6 @@ int main(int argc, char *argv[]) {
     }
 
     free(file_infos);
-
     closedir(directory);
-
-    return 0;
+    return EXIT_SUCCESS;
 }
