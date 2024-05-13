@@ -14,11 +14,11 @@ void print_help() {
     printf("Usage: cp [OPTION]... SOURCE DEST\n");
     printf("Copy SOURCE to DEST.\n\n");
     printf("Options:\n");
-    printf("  -r, --recursive    \tcopy directories recursively\n");
-    printf("  -p, --preserve     \tpreserve file attributes\n");
-    printf("  -f, --force        \tforce copy by overwriting destination\n");
-    printf("  -v, --verbose      \tverbose mode\n");
-    printf("  --help             \tdisplay this help and exit\n");
+    printf("  -r, --recursive \tcopy directories recursively\n");
+    printf("  -p, --preserve\t\tpreserve file attributes\n");
+    printf("  -f, --force\t\tforce copy by overwriting destination\n");
+    printf("  -v, --verbose \t\tverbose mode\n");
+    printf("  --help       \t\tdisplay this help and exit\n");
     exit(EXIT_SUCCESS);
 }
 
