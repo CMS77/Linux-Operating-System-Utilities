@@ -6,12 +6,13 @@
 
 
 void print_options() {
-    printf("\nOptions:\n");
-    printf("  -n <num>    : Show the last <num> lines\n");
-    printf("  -f          : Show file while modified\n");
-    printf("  -q          : No headers file\n");
-    printf("  -r          : Show file in reverse\n");
-    printf("  --help      : Display this help message\n");
+    printf("\nOptions:\n\n");
+    printf("  <file>...            : Output the last 5 lines\n");
+    printf("  -n <num> <file>...   : Output the last <num> lines\n");
+    printf("  -f <file>...         : Output file while modified\n");
+    printf("  -q <file>...         : Never output headers file\n");
+    printf("  -r <file>...         : Output file in reverse\n");
+    printf("  --help               : Display this help message\n\n");
 }
 
 void print_last_lines(FILE *file, int n) {
@@ -63,15 +64,13 @@ void print_reverse(FILE *file) {
 }
 
 int main(int argc, char *argv[]) {
-    FILE *file = NULL;
-    int lines = 10; // -n
+    int lines = 5; // -n
     int file_mod = 0; // -f
     int no_header = 0; // -q
     int reverse = 0; // -r
-    int file_arg_encountered = 0;
 
     for (int i = 1; i < argc; i++) {
-        if (!file_arg_encountered && argv[i][0] == '-') {
+        if (argv[i][0] == '-') {
             if (strcmp(argv[i], "-n") == 0 && i + 1 < argc) {
                 lines = atoi(argv[i + 1]);
                 i++;
@@ -85,61 +84,48 @@ int main(int argc, char *argv[]) {
                 print_options();
                 return EXIT_SUCCESS;
             } else {
-                printf("Invalid option: %s\n", argv[i]);
+                printf("Invalid option: %s. Check --help.\n", argv[i]);
                 return EXIT_FAILURE;
             }
         } else {
-            if (!file_arg_encountered) {
-                file = fopen(argv[i], "r");
+                FILE *file = fopen(argv[i], "r");
                 if (file == NULL) {
                     perror("Error opening file");
                     return EXIT_FAILURE;
                 }
-                file_arg_encountered = 1;
-            } else {
-                printf("Invalid Command\n");
-                return EXIT_FAILURE;
-            }
-        }
-    }
 
-    if (file == NULL) {
-        printf("No file provided\n");
-        return EXIT_FAILURE;
-    }
+                struct stat st;
+                if (stat(argv[argc - 1], &st) != 0) {
+                    perror("Error getting file status");
+                    return EXIT_FAILURE;
+                }
+                time_t last_mtime = st.st_mtime;
 
-    struct stat st;
-    if (stat(argv[argc - 1], &st) != 0) {
-        perror("Error getting file status");
-        return EXIT_FAILURE;
-    }
-    time_t last_mtime = st.st_mtime;
+                if (reverse) {
+                    print_reverse(file);
+                } else if (file_mod) {
+                    print_last_lines(file, lines);
 
-    if (reverse) {
-        print_reverse(file);
-    } else if (file_mod) {
-        print_last_lines(file, lines);
+                    while (1) {
+                        usleep(100000); 
+                        if (stat(argv[argc - 1], &st) != 0) {
+                            perror("Error getting file status");
+                            fclose(file);
+                            return EXIT_FAILURE;
+                        }
+                        if (st.st_mtime != last_mtime) {
+                            fseek(file, 0, SEEK_SET);
+                            system("clear"); 
+                            print_last_lines(file, lines);
+                            last_mtime = st.st_mtime;
+                        }
+                    }
+                } else {
+                    print_last_lines(file, lines);
+                }
 
-        while (1) {
-            usleep(100000); 
-            if (stat(argv[argc - 1], &st) != 0) {
-                perror("Error getting file status");
                 fclose(file);
-                return EXIT_FAILURE;
-            }
-            if (st.st_mtime != last_mtime) {
-                fseek(file, 0, SEEK_SET);
-                system("clear"); 
-                print_last_lines(file, lines);
-                last_mtime = st.st_mtime;
-            }
         }
-    } else {
-        print_last_lines(file, lines);
-    }
-
-    fclose(file);
+    } 
     return EXIT_SUCCESS;
 }
-
-

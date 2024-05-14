@@ -5,12 +5,13 @@
 #include <unistd.h>
 
 void print_options() {
-    printf("\nOptions:\n");
-    printf("  -n <num>    : Output the first <num> lines\n");
-    printf("  -q          : Never output headers giving file names\n");
-    printf("  -c <num>    : Output the first <num> bytes\n");
-    printf("  -v          : Always output headers giving file names\n");
-    printf("  --help      : Display this help message\n");
+    printf("\nOptions:\n\n");
+    printf("  <file>...            : Output the first 5 lines\n");
+    printf("  -n <num> <file>...   : Output the first <num> lines\n");
+    printf("  -q <file>...         : Never output headers giving file names\n");
+    printf("  -c <num> <file>...   : Output the first <num> bytes\n");
+    printf("  -v <file>...         : Always output headers giving file names\n");
+    printf("  --help               : Display this help message\n\n");
 }
 
 void print_head_lines(FILE *file, int n) {
@@ -30,7 +31,6 @@ void print_head_bytes(FILE *file, int n) {
     while (fgets(buffer, sizeof(buffer), file) != NULL && bytes_read < n) {
         int len = strlen(buffer);
         if (bytes_read + len > n) {
-            // Print only required part of the line
             int remaining_bytes = n - bytes_read;
             fwrite(buffer, 1, remaining_bytes, stdout);
             break;
@@ -42,15 +42,15 @@ void print_head_bytes(FILE *file, int n) {
 }
 
 int main(int argc, char *argv[]) {
-    FILE *file = NULL;
-    int lines = 10; // -n
+    int lines = 5; // -n
     int bytes = -1; // -c
     int no_header = 0; // -q
     int header = 0; // -v
-    int file_arg_encountered = 0;
 
+    // Iterate over command-line arguments
     for (int i = 1; i < argc; i++) {
-        if (!file_arg_encountered && argv[i][0] == '-') {
+        // Check if the argument is an option
+        if ( argv[i][0] == '-') {
             if (strcmp(argv[i], "-n") == 0 && i + 1 < argc) {
                 lines = atoi(argv[i + 1]);
                 i++;
@@ -65,39 +65,30 @@ int main(int argc, char *argv[]) {
                 print_options();
                 return EXIT_SUCCESS;
             } else {
-                printf("Invalid option: %s\n", argv[i]);
+                printf("Invalid option: %s. Check --help.\n", argv[i]);
                 return EXIT_FAILURE;
             }
         } else {
-            if (!file_arg_encountered) {
-                file = fopen(argv[i], "r");
-                if (file == NULL) {
-                    perror("Error opening file");
-                    return EXIT_FAILURE;
-                }
-                file_arg_encountered = 1;
-            } else {
-                printf("Invalid Command\n");
+            
+            FILE *file = fopen(argv[i], "r");
+            if (file == NULL) {
+                perror("Error opening file");
                 return EXIT_FAILURE;
             }
-        }
-    }
+                
+            if (header) {
+                printf("\n==> %s <==\n\n", argv[i]);
+            }
 
-    if (file == NULL) {
-        printf("No file provided\n");
-        return EXIT_FAILURE;
-    }
+            if (bytes != -1) {
+                print_head_bytes(file, bytes);
+            } else {
+                print_head_lines(file, lines);
+            }
 
-    if (header) {
-        printf("\n|| %s ||\n\n", argv[argc - 1]);
+            fclose(file);
+        
+        } 
     }
-
-    if (bytes != -1) {
-        print_head_bytes(file, bytes);
-    } else {
-        print_head_lines(file, lines);
-    }
-
-    fclose(file);
     return EXIT_SUCCESS;
 }

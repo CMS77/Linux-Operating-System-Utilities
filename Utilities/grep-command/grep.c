@@ -7,12 +7,13 @@
 #include <limits.h>
 
 void print_options() {
-    printf("\nOptions:\n");
-    printf("  -i          : Ignore Uppercase/Lowercase\n");
-    printf("  -n          : Show lines\n");
-    printf("  -r          : Recursive search\n");
-    printf("  -v          : Invert search\n");
-    printf("  --help      : Display this help message\n");
+    printf("\nOptions:\n\n");
+    printf(" <pattern> <file>...         : Search pattern\n");
+    printf("  -i <pattern> <file>...     : Ignore Uppercase/Lowercase\n");
+    printf("  -n <pattern> <file>...     : Output lines\n");
+    printf("  -r <pattern> <path>...     : Recursive search\n");
+    printf("  -v <pattern> <file>...     : Invert search\n");
+    printf("  --help                     : Display this help message\n\n");
 }
 
 void print_file_matches(const char *filename, const char *pattern, int ignore_upper_lower_case, int show_line, int invert_search) {
@@ -78,11 +79,6 @@ void grep_directory(const char *dir_path, const char *pattern, int ignore_upper_
 }
 
 int main(int argc, char *argv[]) {
-    if (argc < 2) {
-        printf("Usage: %s [arg] pattern [file1 file2 ...]\n", argv[0]);
-        return EXIT_FAILURE;
-    }
-
     int ignore_upper_lower_case = 0; // -i
     int show_line = 0; // -n
     int recursive_search = 0; // -r
@@ -104,7 +100,7 @@ int main(int argc, char *argv[]) {
                 print_options();
                 return EXIT_SUCCESS;
             } else {
-                printf("Invalid option: %s\n", argv[i]);
+                printf("Invalid option: %s. Check --help\n", argv[i]);
                 return EXIT_FAILURE;
             }
         } else {
@@ -125,8 +121,8 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    if (pattern == NULL || argc == 2) {
-        printf("Usage: %s [options] pattern [file1 file2 ...]\n", argv[0]);
+    if (pattern == NULL || argc < 2) {
+        printf("Invalid. Check --help.\n");
         return EXIT_FAILURE;
     }
 
