@@ -13,8 +13,3 @@
 
 
 
-
----
-
-## Nota
-O diretório `../Utilities/test-commands` é apenas para testar utilitários. Por favor, ignore.
