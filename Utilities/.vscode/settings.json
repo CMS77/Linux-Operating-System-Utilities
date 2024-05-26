@@ -1,6 +1,7 @@
 {
     "C_Cpp.errorSquiggles": "disabled",
     "files.associations": {
-        "algorithm": "c"
+        "algorithm": "c",
+        "dirent.h": "c"
     }
 }

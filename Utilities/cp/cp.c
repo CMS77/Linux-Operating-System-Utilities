@@ -1,25 +1,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <getopt.h>
 #include <fcntl.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <limits.h>
 
 #define BUF_SIZE 4096
 
-void print_help() {
-    printf("Usage: cp [OPTION]... SOURCE DEST\n");
-    printf("Copy SOURCE to DEST.\n\n");
-    printf("Options:\n");
-    printf("  -r, --recursive    \tcopy directories recursively\n");
-    printf("  -p, --preserve     \tpreserve file attributes\n");
-    printf("  -f, --force        \tforce copy by overwriting destination\n");
-    printf("  -v, --verbose      \tverbose mode\n");
-    printf("  --help             \tdisplay this help and exit\n");
-    exit(EXIT_SUCCESS);
+void print_options() {
+    printf("\nOptions:\n\n");
+    printf("  <source> <dest>        : Copy files or directories.\n");
+    printf("  -r <source> <dest>     : Copy directories recursively.\n");
+    printf("  -p <source> <dest>     : Preserve file attributes.\n");
+    printf("  -f <source> <dest>     : Force copy by overwriting destination.\n");
+    printf("  -v <source> <dest>     : Verbose mode.\n");
+    printf("  --help                 : Display this help message.\n\n");
 }
 
 void copy_file(const char *source, const char *dest, int preserve, int force, int verbose) {
@@ -121,16 +119,7 @@ int main(int argc, char *argv[]) {
     int opt;
     int recursive = 0, preserve = 0, force = 0, verbose = 0;
 
-    struct option long_options[] = {
-        {"recursive", no_argument, NULL, 'r'},
-        {"preserve", no_argument, NULL, 'p'},
-        {"force", no_argument, NULL, 'f'},
-        {"verbose", no_argument, NULL, 'v'},
-        {"help", no_argument, NULL, 'h'},
-        {NULL, 0, NULL, 0}
-    };
-
-    while ((opt = getopt_long(argc, argv, "rpfvh", long_options, NULL)) != -1) {
+    while ((opt = getopt(argc, argv, "rpfvh")) != -1) {
         switch (opt) {
             case 'r':
                 recursive = 1;
@@ -145,14 +134,11 @@ int main(int argc, char *argv[]) {
                 verbose = 1;
                 break;
             case 'h':
-                print_help();
-                break;
-            case '?':
-                fprintf(stderr, "Unknown option: -%c\n", optopt);
-                return EXIT_FAILURE;
+                print_options();
+                exit(EXIT_SUCCESS);
             default:
-                print_help();
-                break;
+                print_options();
+                return EXIT_FAILURE;
         }
     }
 
@@ -169,6 +155,3 @@ int main(int argc, char *argv[]) {
 
     return EXIT_SUCCESS;
 }
-
-
-//usage: ./cp-all -v cp-all.c test.txt

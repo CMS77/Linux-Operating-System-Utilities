@@ -3,6 +3,16 @@
 #include <unistd.h>
 #include <string.h>
 
+void print_options() {
+    printf("\nOptions:\n\n");
+    printf("  <source> <dest>           : Move or rename files or directories.\n");
+    printf("  -i <source> <dest>        : Prompt before overwriting.\n");
+    printf("  -n <source> <dest>        : Do not overwrite an existing file.\n");
+    printf("  -v <source> <dest>        : Explain what is being done.\n");
+    printf("  --backup <source> <dest>  : Make a backup of each existing destination file.\n");
+    printf("  --help                    : Display this help message.\n\n");
+}
+
 void move_file(const char *source, const char *destination, int interactive, int verbose, int no_clobber, int backup) {
     if (interactive) {
         printf("Do you want to move '%s' to '%s'? (y/n): ", source, destination);
@@ -54,14 +64,7 @@ int main(int argc, char *argv[]) {
         } else if (strcmp(argv[i], "--backup") == 0) {
             backup = 1;
         } else if (strcmp(argv[i], "--help") == 0) {
-            printf("Usage: mv [OPTION]... SOURCE DEST\n");
-            printf("Move SOURCE to DEST.\n\n");
-            printf("Options:\n");
-            printf("  -i              prompt before overwriting\n");
-            printf("  -n              do not overwrite an existing file\n");
-            printf("  -v              explain what is being done\n");
-            printf("  --backup        make a backup of each existing destination file\n");
-            printf("  --help          display this help and exit\n");
+            print_options();
             return 0;
         }
     }

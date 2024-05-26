@@ -4,70 +4,61 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-
 void print_options() {
     printf("\nOptions:\n\n");
-    printf("  <file>...            : Output the last 5 lines\n");
-    printf("  -n <num> <file>...   : Output the last <num> lines\n");
-    printf("  -f <file>...         : Output file while modified\n");
-    printf("  -q <file>...         : Never output headers file\n");
-    printf("  -r <file>...         : Output file in reverse\n");
-    printf("  --help               : Display this help message\n\n");
+    printf("  <file>               : Output the last 5 lines.\n");
+    printf("  -n <num> <file>      : Output the last <num> lines.\n");
+    printf("  -f <file>            : Output file while modified.\n");
+    printf("  -q <file>            : Never output headers file.\n");
+    printf("  -r <file>            : Output file in reverse.\n");
+    printf("  --help               : Display this help message.\n\n");
 }
 
-void print_last_lines(FILE *file, int n) {
-    char buffer[1024];
-    char *lines[n];
-    int line_count = 0;
-    int index = 0;
-
-    for (int i = 0; i < n; i++)
-        lines[i] = NULL;
-
-    while (fgets(buffer, sizeof(buffer), file) != NULL) {
-        if (lines[index] != NULL)
-            free(lines[index]);
-
-        lines[index] = strdup(buffer);
-        index = (index + 1) % n;
-        line_count++;
-    }
-
-    int start = (line_count >= n) ? index : 0;
-    for (int i = 0; i < n && i < line_count; i++) {
-        if (lines[(start + i) % n] != NULL)
-            printf("%s", lines[(start + i) % n]);
-    }
-
-    for (int i = 0; i < n; i++)
-        if (lines[i] != NULL)
-            free(lines[i]);
-}
-
-void print_reverse(FILE *file) {
+void print_lines(FILE *file, int n, int reverse, int reverse_alone) {
     char buffer[1024];
     char **lines = NULL;
     int line_count = 0;
 
     while (fgets(buffer, sizeof(buffer), file) != NULL) {
+        size_t len = strlen(buffer);
+        if (len > 0 && buffer[len - 1] == '\n') {
+            buffer[len - 1] = '\0';
+        }
+
         lines = realloc(lines, sizeof(char *) * (line_count + 1));
         lines[line_count] = strdup(buffer);
         line_count++;
     }
 
-    for (int i = line_count - 1; i >= 0; i--) {
-        printf("%s", lines[i]);
-        free(lines[i]);
+    if (reverse_alone) {
+        for (int i = line_count - 1; i >= 0; i--) {
+            printf("%s\n", lines[i]);
+            free(lines[i]);
+        }
+    } else if (reverse) {
+        int start = (line_count > n) ? line_count - n : 0;
+        for (int i = line_count - 1; i >= start; i--) {
+            printf("%s\n", lines[i]);
+            free(lines[i]);
+        }
+    } else {
+        int start = (line_count > n) ? line_count - n : 0;
+        for (int i = start; i < line_count; i++) {
+            printf("%s\n", lines[i]);
+            free(lines[i]);
+        }
     }
 
     free(lines);
 }
 
 int main(int argc, char *argv[]) {
-    int lines = 5; // -n
+    int lines = 5;
     int file_mod = 0; // -f
     int no_header = 0; // -q
-    int reverse = 0; // -r
+    int reverse = 0; // -r & -n
+    int reverse_alone = 0; // -r
+    int file_count = 0; 
 
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
@@ -88,44 +79,50 @@ int main(int argc, char *argv[]) {
                 return EXIT_FAILURE;
             }
         } else {
-                FILE *file = fopen(argv[i], "r");
-                if (file == NULL) {
-                    perror("Error opening file");
-                    return EXIT_FAILURE;
-                }
+            file_count++;
+            FILE *file = fopen(argv[i], "r");
+            if (file == NULL) {
+                perror("Error opening file");
+                return EXIT_FAILURE;
+            }
 
-                struct stat st;
-                if (stat(argv[argc - 1], &st) != 0) {
-                    perror("Error getting file status");
-                    return EXIT_FAILURE;
-                }
-                time_t last_mtime = st.st_mtime;
+            struct stat st;
+            if (stat(argv[i], &st) != 0) {
+                perror("Error getting file status");
+                return EXIT_FAILURE;
+            }
+            time_t last_mtime = st.st_mtime;
 
-                if (reverse) {
-                    print_reverse(file);
-                } else if (file_mod) {
-                    print_last_lines(file, lines);
-
-                    while (1) {
-                        usleep(100000); 
-                        if (stat(argv[argc - 1], &st) != 0) {
-                            perror("Error getting file status");
-                            fclose(file);
-                            return EXIT_FAILURE;
-                        }
-                        if (st.st_mtime != last_mtime) {
-                            fseek(file, 0, SEEK_SET);
-                            system("clear"); 
-                            print_last_lines(file, lines);
-                            last_mtime = st.st_mtime;
-                        }
+            if (file_mod) {
+                while (1) {
+                    if (stat(argv[i], &st) != 0) {
+                        perror("Error getting file status");
+                        fclose(file);
+                        return EXIT_FAILURE;
                     }
-                } else {
-                    print_last_lines(file, lines);
+                    if (st.st_mtime != last_mtime) {
+                        fseek(file, 0, SEEK_SET);
+                        printf("----------\n");
+                        print_lines(file, lines, reverse, reverse && lines == 5);
+                        fflush(stdout);
+                        last_mtime = st.st_mtime;
+                    }
+                    usleep(100000);
                 }
+            
+            } 
+            
+            if (!no_header && (file_count > 1)) {
+                printf("\n==> %s <==\n\n", argv[i]);
+                print_lines(file, lines, reverse, reverse_alone);
+            
+            }else {
+                reverse_alone = reverse && (lines == 5);
+                print_lines(file, lines, reverse, reverse_alone);
+            }
 
-                fclose(file);
+            fclose(file);
         }
-    } 
+    }
     return EXIT_SUCCESS;
 }

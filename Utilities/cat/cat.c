@@ -4,16 +4,14 @@
 
 #define MAX_LINE_LENGTH 1024
 
-void print_help() {
-    printf("Usage: cat [OPTION]... [FILE]...\n");
-    printf("Concatenate FILE(s) to standard output.\n\n");
-    printf("Options:\n");
-    printf("  -n             Number all output lines.\n");
-    printf("  -b             Number non-blank output lines.\n");
-    printf("  -s             Suppress repeated empty output lines.\n");
-    printf("  -E             Display $ at the end of each line.\n");
-    printf("  --help         Display this help and exit.\n");
-    exit(EXIT_SUCCESS);
+void print_options() {
+    printf("\nOptions:\n\n");
+    printf("  <file>            : Display the content of file.\n");
+    printf("  -n <file>         : Number all output lines.\n");
+    printf("  -b <file>         : Number non-blank output lines.\n");
+    printf("  -s <file>         : Suppress repeated empty output lines.\n");
+    printf("  -E <file>         : Display $ at the end of each line.\n");
+    printf("  --help            : Display this help message.\n\n");
 }
 
 void cat_file(FILE *file, int number_all, int number_non_blank, int suppress_empty, int display_end) {
@@ -58,12 +56,11 @@ int main(int argc, char *argv[]) {
     int display_end = 0;
 
     if (argc == 1) {
-        // No arguments provided
         cat_file(stdin, number_all, number_non_blank, suppress_empty, display_end);
     } else {
         for (int i = 1; i < argc; i++) {
             if (strcmp(argv[i], "--help") == 0) {
-                print_help();
+                print_options();
             } else if (strcmp(argv[i], "-n") == 0) {
                 number_all = 1;
             } else if (strcmp(argv[i], "-b") == 0) {
@@ -85,5 +82,3 @@ int main(int argc, char *argv[]) {
     }
     return 0;
 }
-
-//usage: ./cat [OPTION]... [FILE]...

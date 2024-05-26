@@ -6,15 +6,14 @@
 #include <sys/stat.h>
 #include <errno.h>
 
-void print_help() {
-    printf("Usage: rm [OPTION]... [FILE]...\n");
-    printf("Remove (unlink) the FILE(s).\n");
-    printf("\nOptions:\n");
-    printf("  -f        ignore nonexistent files and arguments, never prompt\n");
-    printf("  -r        remove directories and their contents recursively\n");
-    printf("  -v        explain what is being done\n");
-    printf("  -i        prompt before every removal\n");
-    printf("  --help    display this help and exit\n");
+void print_options() {
+    printf("\nOptions:\n\n");
+    printf("  <file>          :Remove file.\n");
+    printf("  -f <file>       :Ignore nonexistent files and arguments, never prompt.\n");
+    printf("  -r <path>       :Remove directories and their contents recursively.\n");
+    printf("  -v <file>       :Explain what is being done.\n");
+    printf("  -i <file>       :Prompt before every removal.\n");
+    printf("  --help          :Display this help message.\n\n");
 }
 
 int remove_file(const char *path, int force, int verbose, int interactive) {
@@ -25,14 +24,14 @@ int remove_file(const char *path, int force, int verbose, int interactive) {
             printf("not removed\n");
             return 0;
         }
-        while (c != '\n' && c != EOF) c = getchar(); // Consume the newline
+        while (c != '\n' && c != EOF) c = getchar();
     }
     if (unlink(path) == 0) {
         if (verbose) printf("removed '%s'\n", path);
         return 0;
     } else {
         if (force && errno == ENOENT) {
-            return 0; // Ignore nonexistent files
+            return 0;
         }
         perror("rm");
         return -1;
@@ -43,7 +42,7 @@ int remove_directory(const char *path, int force, int verbose, int interactive) 
     DIR *dir = opendir(path);
     if (!dir) {
         if (force && errno == ENOENT) {
-            return 0; // Ignore nonexistent directories
+            return 0;
         }
         perror("rm");
         return -1;
@@ -77,7 +76,7 @@ int remove_directory(const char *path, int force, int verbose, int interactive) 
             printf("not removed\n");
             return 0;
         }
-        while (c != '\n' && c != EOF) c = getchar(); // Consume the newline
+        while (c != '\n' && c != EOF) c = getchar();
     }
 
     if (rmdir(path) == 0) {
@@ -94,7 +93,7 @@ int main(int argc, char *argv[]) {
 
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--help") == 0) {
-            print_help();
+            print_options();
             return 0;
         } else if (argv[i][0] == '-') {
             for (int j = 1; argv[i][j] != '\0'; j++) {
@@ -113,7 +112,7 @@ int main(int argc, char *argv[]) {
                         break;
                     default:
                         fprintf(stderr, "rm: invalid option -- '%c'\n", argv[i][j]);
-                        print_help();
+                        print_options();
                         return 1;
                 }
             }
@@ -131,7 +130,7 @@ int main(int argc, char *argv[]) {
                     remove_file(argv[i], force, verbose, interactive);
                 }
             } else {
-                if (force) continue; // Ignore nonexistent files
+                if (force) continue;
                 perror("rm");
                 return 1;
             }

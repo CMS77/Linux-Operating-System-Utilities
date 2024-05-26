@@ -8,12 +8,12 @@
 
 void print_options() {
     printf("\nOptions:\n\n");
-    printf(" <pattern> <file>...         : Search pattern\n");
-    printf("  -i <pattern> <file>...     : Ignore Uppercase/Lowercase\n");
-    printf("  -n <pattern> <file>...     : Output lines\n");
-    printf("  -r <pattern> <path>...     : Recursive search\n");
-    printf("  -v <pattern> <file>...     : Invert search\n");
-    printf("  --help                     : Display this help message\n\n");
+    printf("  <pattern> <file>           : Search pattern.\n");
+    printf("  -i <pattern> <file>        : Ignore Uppercase/Lowercase.\n");
+    printf("  -n <pattern> <file>        : Output lines.\n");
+    printf("  -r <pattern> <path>        : Recursive search.\n");
+    printf("  -v <pattern> <file>        : Invert search.\n");
+    printf("  --help                     : Display this help message.\n\n");
 }
 
 void print_file_matches(const char *filename, const char *pattern, int ignore_upper_lower_case, int show_line, int invert_search) {

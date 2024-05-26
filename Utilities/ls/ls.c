@@ -14,12 +14,13 @@ typedef struct {
 } FileInfo;
 
 void print_options() {
-    printf("\nOptions:\n");
-    printf("  -a          : Show hidden files\n");
-    printf("  -h          : Show file sizes in human-readable format\n");
-    printf("  -l          : Show detailed file information(Type, Owner, Group, Size, Modification time, Name)\n");
-    printf("  --s         : Sort files by size\n");
-    printf("  --help      : Display this help message\n");
+    printf("\nOptions:\n\n");
+    printf("  <path>          : Show files.\n");
+    printf("  -a <path>       : Show hidden files.\n");
+    printf("  -h <path>       : Show file sizes in human-readable format.\n");
+    printf("  -l <path>       : Show detailed file information(Type, Owner, Group, Size, Modification time, Name).\n");
+    printf("  --s <path>      : Sort files by size.\n");
+    printf("  --help          : Display this help message.\n\n");
 }
 
 
@@ -98,7 +99,7 @@ int main(int argc, char *argv[]) {
                 print_options();
                 return EXIT_SUCCESS;
             } else {
-                printf("Invalid option: %s\n", argv[i]);
+                printf("Invalid option: %s. Check --help.\n", argv[i]);
                 return EXIT_FAILURE;
             }
         } else {

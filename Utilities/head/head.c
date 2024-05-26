@@ -6,12 +6,12 @@
 
 void print_options() {
     printf("\nOptions:\n\n");
-    printf("  <file>...            : Output the first 5 lines\n");
-    printf("  -n <num> <file>...   : Output the first <num> lines\n");
-    printf("  -q <file>...         : Never output headers giving file names\n");
-    printf("  -c <num> <file>...   : Output the first <num> bytes\n");
-    printf("  -v <file>...         : Always output headers giving file names\n");
-    printf("  --help               : Display this help message\n\n");
+    printf("  <file>               : Output the first 5 lines.\n");
+    printf("  -n <num> <file>      : Output the first <num> lines.\n");
+    printf("  -q <file>            : Never output headers giving file names.\n");
+    printf("  -c <num> <file>      : Output the first <num> bytes.\n");
+    printf("  -v <file>            : Always output headers giving file names.\n");
+    printf("  --help               : Display this help message.\n\n");
 }
 
 void print_head_lines(FILE *file, int n) {
@@ -46,11 +46,10 @@ int main(int argc, char *argv[]) {
     int bytes = -1; // -c
     int no_header = 0; // -q
     int header = 0; // -v
+    int file_count = 0;
 
-    // Iterate over command-line arguments
     for (int i = 1; i < argc; i++) {
-        // Check if the argument is an option
-        if ( argv[i][0] == '-') {
+        if (argv[i][0] == '-') {
             if (strcmp(argv[i], "-n") == 0 && i + 1 < argc) {
                 lines = atoi(argv[i + 1]);
                 i++;
@@ -69,14 +68,14 @@ int main(int argc, char *argv[]) {
                 return EXIT_FAILURE;
             }
         } else {
-            
+            file_count++;
             FILE *file = fopen(argv[i], "r");
             if (file == NULL) {
                 perror("Error opening file");
                 return EXIT_FAILURE;
             }
                 
-            if (header) {
+            if (!no_header && (file_count > 1 || header)) {
                 printf("\n==> %s <==\n\n", argv[i]);
             }
 
@@ -87,7 +86,6 @@ int main(int argc, char *argv[]) {
             }
 
             fclose(file);
-        
         } 
     }
     return EXIT_SUCCESS;
