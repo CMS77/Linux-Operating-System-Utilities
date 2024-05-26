@@ -10,7 +10,7 @@ void print_help() {
     printf("Options:\n");
     printf("  -n             Number all output lines.\n");
     printf("  -b             Number non-blank output lines.\n");
-    printf("  -s             Suppress repeated empty output lines.\n"); //TODO: Fix blank not being suppressed
+    printf("  -s             Suppress repeated empty output lines.\n");
     printf("  -E             Display $ at the end of each line.\n");
     printf("  --help         Display this help and exit.\n");
     exit(EXIT_SUCCESS);
@@ -32,7 +32,7 @@ void cat_file(FILE *file, int number_all, int number_non_blank, int suppress_emp
         }
 
         if (number_all || (number_non_blank && empty_line_seen == 0)) {
-            printf("%6d  ", line_num);
+            printf("\n%6d ", line_num);
             line_num++;
         }
 
